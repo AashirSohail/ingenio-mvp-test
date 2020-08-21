@@ -3,6 +3,8 @@ const router = express.Router();
 const purchase = require("../models/purchase");
 const SmartChain = require("../node-komodo-rpc");
 const address = require("../models/address");
+const user = require("../models/user");
+
 //update the 
 
 var config = {
@@ -58,13 +60,9 @@ router.get("/getInfo",(req,res)=> {
 })
 
 router.get("/getZaddress", (req,res) => {
-    komodoRPC2
-    .z_listaddresses()
-    .then(info=> {
-     // console.log(info)
-      res.json(info);
-    })
-    .catch(error=> (console.log(error)))
+
+  const address = this.getNewZAddress()
+    res.json({address: address});
 
 })
 
@@ -127,8 +125,6 @@ router.get("/getNewAddress", (req,res)=> {
 })
 
 router.get("/purchaseStock", (req,res)=> {
-
-  
   komodoRPC2.
     z_getbalance(addresses[0])
     .then(info=> {
@@ -138,5 +134,52 @@ router.get("/purchaseStock", (req,res)=> {
   .catch(error=> (console.log(error)))
 })
 
+
+router.post("/signUp", (req,res)=> {
+  const data = req.body;
+  console.log(data);
+
+  user.findOne({userID: data.userID})
+  .then(async response=> {
+    if (response) {
+      console.log("userID taken")
+      res.status(400).json({error: "UserID already taken"})
+    }
+    else {
+      await getNewZAddress()
+      .then(response=> {
+        console.log(response);
+        const payload = {
+          userID: data.userID,
+          address: response
+        }
+        const newUser = new user(payload)
+        newUser.save(error=> {
+          if (error) {
+            res.status(400).json({error: "Error in saving UserID"})
+          }
+          else {
+            res.json({success: "User ID sucessfully saved"})
+          }
+        })
+      })
+      .catch(error=>(console.log(error)))
+    }
+  })
+  .catch(error=>(console.log(error)))
+})
+
+
+async function getNewZAddress() {
+  return new Promise((resolve,reject)=>{
+    komodoRPC2
+    .z_getnewaddress()
+    .then(info=> {
+    resolve(info);
+    })
+    .catch(error=> (console.log(error)))
+  })
+  
+}
 
 module.exports = router;

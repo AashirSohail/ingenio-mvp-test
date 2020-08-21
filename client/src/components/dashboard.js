@@ -1,6 +1,12 @@
 import React, { Component } from "react";
 
 class Dashboard extends Component {
+
+state = {
+  userID: ""
+}
+
+
 //N9SUKXTJE3657J9P
 async componentDidMount(){
     let url = 'https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=IBM&interval=5min&outputsize=1&apikey=N9SUKXTJE3657J9P'
@@ -46,18 +52,37 @@ async componentDidMount(){
                   src="https://i2.wp.com/airlinkflight.org/wp-content/uploads/2019/02/male-placeholder-image.jpeg?ssl=1"
                   alt="Card image cap"
                 />
-                <div className="card-body">
-                  <h5 className="card-title">User Name</h5>
-                  <p className="card-text"></p>
-                  <div className="text-center">
-                    <a href="#" className="btn btn-primary mr-3 pl-3 pr-3">
-                      Buy
-                    </a>
-                    <a href="#" className="btn btn-secondary pl-3 pr-3">
-                      Sell
-                    </a>
+
+                {this.state.userID ? (
+                      <div className="card-body">
+                    <h5 className="card-title">Sign In</h5>
+                    <p className="card-text"></p>
+                    <div className="text-center">
+                    <form>
+                      <input
+                      type="text"
+                      value={this.state.userID}
+                      name="userID"
+                      placeholder="Enter UserID here"
+                      />
+                    </form>
+
+                    </div>
                   </div>
-                </div>
+                  ): 
+                    <div className="card-body">
+                    <h5 className="card-title">Sign In</h5>
+                    <p className="card-text"></p>
+                    <div className="text-center">
+                      <a href="#" className="btn btn-primary mr-3 pl-3 pr-3">
+                        Buy
+                      </a>
+                      <a href="#" className="btn btn-secondary pl-3 pr-3">
+                        Sell
+                      </a>
+                    </div>
+                  </div>
+              }
               </div>
             </div>
             <div className="d-flex justify-content-left ml-5 col-8">
