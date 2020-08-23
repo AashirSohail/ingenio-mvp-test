@@ -65,21 +65,20 @@ router.get("/getZaddress", (req,res) => {
 
 })
 
-router.get("/sendMim", (req,res) => {
-  komodoRPC2
-  .z_listaddresses()
-  .then(info=> {
-    const addresses = info;
-
-    komodoRPC2.
-    z_sendmany(addresses[0], [{"address": addresses[1], "amount": "50"}])
-    .then(info=> {
-      console.log(info);
-      res.json(info)
+router.post("/sendMim", (req,res) => {
+  const data = req.body;
+    user.findOne({userID: data.userID})
+    .then(response=> {
+      console.log(response);
+      komodoRPC2.
+      z_sendmany("zs18t53rvgl65r6tjhflj4epsxk354qzvzxl7msknye6s29l4sxne3cu3jstcl3ud43nx8xv9q87xe", [{"address": response.address, "amount": data.amount}])
+      .then(info=> {
+        console.log(info);
+        res.json(info)
+      })
+      .catch(error=>(consol.log(error)))
     })
-    .catch(error=>(consol.log(error)))
-  })
-  .catch(error=> (console.log(error)))
+    .catch(error=> (console.log(error)))
 })
 
 router.post("/getBalance", (req,res)=> {
@@ -121,12 +120,37 @@ router.get("/getNewAddress", (req,res)=> {
   .catch(error=> (console.log(error)))
 })
 
-router.get("/purchaseStock", (req,res)=> {
+router.post("/purchaseStock", (req,res)=> {
+  const data = req.body;
+  console.log(data)
   komodoRPC2.
-    z_getbalance(addresses[0])
-    .then(info=> {
-      console.log(info);
-      res.json(info)
+    z_getbalance(data.address)
+    .then(balance=> {
+      if (balance > data.cost) {
+        komodoRPC2.
+        z_sendmany(data.addressS , [{"address": "zs18t53rvgl65r6tjhflj4epsxk354qzvzxl7msknye6s29l4sxne3cu3jstcl3ud43nx8xv9q87xe", "amount": data.cost}])
+        .then(info=> {
+          console.log(info);
+          const payload = {
+            userID: data.userID,
+            stock: data.stock,
+            cost: data.cost,
+            amount: "1",
+            addressS: data.addressS,
+          }
+          const newPurchase = new purchase(payload)
+          newPurchase.save()
+          .then(response=> {
+            console.log(response)
+            res.json({success: "stock purchased successfully"})
+          })
+          .catch(error=>(console.log(error)))
+        })
+        .catch(error=>(consol.log(error)))
+      }
+      else {
+        res.status(400).json({error: "Insufficent Balance"})
+      }
     })
   .catch(error=> (console.log(error)))
 })
@@ -192,7 +216,25 @@ router.post("/signIn", (req,res)=> {
 router.post("/getStocks", (req,res)=> {
   const data = req.body;
   console.log(data)
-  //purchase.find({userID: })
-  res.json({success: "success"});
+  purchase.find({userID: data.userID})
+  .then(response=> {
+    res.json(response)
+  })
+  .catch(error=> (console.log(error)))
 })
+
+router.post("/sellStock", (req,res)=> {
+  const data = req.body;
+  purchase.deleteOne({_id: data.id})
+  .then(response=> {
+    komodoRPC2.
+    z_sendmany("zs18t53rvgl65r6tjhflj4epsxk354qzvzxl7msknye6s29l4sxne3cu3jstcl3ud43nx8xv9q87xe" , [{"address": data.address, "amount": data.cost}])
+    .then(response=> {
+      res.json(response);
+    })
+    .catch(error=> (console.log(error)))
+  })
+  .catch(error=>(console.log(error)))
+})
+
 module.exports = router;

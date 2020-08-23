@@ -7,7 +7,6 @@ const PurchaseSchema = new Schema({
     cost: String,
     amount: String,
     addressS: String,
-    addressD: String,
     date: {
         type:String,
         default: Date.now()
