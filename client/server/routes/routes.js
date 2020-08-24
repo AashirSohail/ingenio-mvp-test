@@ -151,21 +151,31 @@ router.post("/purchaseStock", (req,res)=> {
         komodoRPC2.
         z_sendmany(data.addressS , [{"address": "zs18t53rvgl65r6tjhflj4epsxk354qzvzxl7msknye6s29l4sxne3cu3jstcl3ud43nx8xv9q87xe", "amount": data.cost}])
         .then(info=> {
-          console.log(info);
-          const payload = {
-            userID: data.userID,
-            stock: data.stock,
-            cost: data.cost,
-            amount: "1",
-            addressS: data.addressS,
-          }
-          const newPurchase = new purchase(payload)
-          newPurchase.save()
+          komodoRPC2
+          .z_getoperationstatus([info])
           .then(response=> {
-            console.log(response)
-            res.json({success: "stock purchased successfully"})
+            console.log(response);
+            /*
+            console.log(info);
+            const payload = {
+              userID: data.userID,
+              stock: data.stock,
+              cost: data.cost,
+              amount: "1",
+              addressS: data.addressS,
+            }
+            const newPurchase = new purchase(payload)
+            newPurchase.save()
+            .then(response=> {
+              console.log(response)
+              res.json({success: "stock purchased successfully"})
+            })
+            .catch(error=>(console.log(error)))*/
           })
-          .catch(error=>(console.log(error)))
+          .catch(error=> {
+            
+          })
+      
         })
         .catch(error=>(consol.log(error)))
       }
