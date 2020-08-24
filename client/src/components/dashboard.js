@@ -13,7 +13,8 @@ state = {
   stocks: [],
   stockStatus: "",
   sendMimStatus: "",
-  userStocks: []
+  userStocks: [],
+  companyBalance: ""
 }
 
 stockTemplate = this.state.stocks.map((stock, index) => {
@@ -115,9 +116,6 @@ async componentDidMount(){
   //this.state.stocks = tempStockArray;
   //console.log(this.state.stocks)
 }
-
-
-
   signIn = (e)=> {
     e.preventDefault();
     axios({
@@ -142,7 +140,8 @@ async componentDidMount(){
       })
       .then(response=> {
         this.setState({
-          balance: response.data.balance
+          balance: response.data.userBalance,
+          companyBalance: response.data.companyBalance
         })
         console.log(this.state.balance)
 
@@ -173,6 +172,22 @@ async componentDidMount(){
     .catch(error=>(console.log(error)))
   }
 
+  signOut = (e)=> {
+    e.preventDefault();
+    this.setState({
+      userID: "",
+      loggedIn: "",
+      balance: 0,
+      userAddress: "",
+      sendUserId: "",
+      amount: "",
+      sendMimStatus: "",
+      userStocks: [],
+      companyBalance: ""
+    })
+  }
+
+
   sendMiM = (e)=> {
     e.preventDefault();
     this.setState({
@@ -194,13 +209,21 @@ async componentDidMount(){
         sendMimStatus: "MiM sucessfully sent to account"
       })
     })
-    .catch(error=> (console.log))
+    .catch(error=> {
+      console.log(error.response.data.error)
+      this.setState({
+        sendMimStatus: error.response.data.error
+
+      })
+    })
   }
 
   refreshBalance = (e)=> {
     e.preventDefault();
     this.setState({
-      balance: ":--"
+      balance: ":--",
+      companyBalance: ":--",
+      sendMimStatus: ""
     })
     const payload = {
       address: this.state.userAddress
@@ -212,7 +235,9 @@ async componentDidMount(){
     })
     .then(response=> {
       this.setState({
-        balance: response.data.balance
+        balance: response.data.userBalance,
+        companyBalance: response.data.companyBalance
+
       })
     })
     .catch(error=>(console.log(error)))
@@ -238,114 +263,147 @@ async componentDidMount(){
     .catch(error=>(console.log(error)))
   }
 
+  refreshStock = (e)=> {
+    e.preventDefault();
+    this.setState({
+
+    })
+    const payload = {
+      userID: this.state.userID
+    }
+    axios({
+      url: "/getStocks",
+      method: "post",
+      data: payload
+    })
+    .then(response=> {
+      console.log(response)
+      this.setState({
+        userStocks: response.data
+      })
+    })
+    .catch(error=>{
+      (console.log(error))
+    })
+
+  }
+
   render() {
     return (
       <>
-        <div className="container mt-3">
-        {this.state.stockStatus ? 
-          (
-          <ul className="list-group">
-          <li className="list-group-item justify-content-between align-items-center">
-          {this.state.stocks[0].symbol}
-          <span className="badge badge-primary badge-pill">{this.state.stocks[0].price}</span>
-          <a href = "/" className="btn btn-primary mr-3 pl-3 pr-3" onClick={e => {this.buyStock(e, this.state.stocks[0].symbol, this.state.stocks[0].price)}}>Buy</a>
-          </li>  
-          <li className="list-group-item justify-content-between align-items-center">
-          {this.state.stocks[1].symbol}
-          <span className="badge badge-primary badge-pill">{this.state.stocks[1].price}</span>
-          <a href = "/" className="btn btn-primary mr-3 pl-3 pr-3" onClick={e=> {this.buyStock(e, this.state.stocks[1].symbol, this.state.stocks[1].price)}}>Buy</a>
-          </li> 
-          <li className="list-group-item justify-content-between align-items-center">
-          {this.state.stocks[2].symbol}
-          <span className="badge badge-primary badge-pill">{this.state.stocks[2].price}</span>
-          <a href = "/" className="btn btn-primary mr-3 pl-3 pr-3" onClick={e=> {this.buyStock(e, this.state.stocks[2].symbol, this.state.stocks[2].price)}}>Buy</a>
-          </li> 
-          </ul>
-          ):
-          <ul className="list-group">
-          </ul>
-        }
+      <div className="container mt-3">
+      {this.state.stockStatus ? 
+        (
+        <ul className="list-group">
+        <li className="list-group-item d-flex justify-content-between align-items-center">
+        {this.state.stocks[0].symbol}
+        <span className="badge badge-primary badge-pill">{this.state.stocks[0].price}</span>
+        <a href = "/" className="btn btn-primary mr-3 pl-3 pr-3" onClick={e => {this.buyStock(e, this.state.stocks[0].symbol, this.state.stocks[0].price)}}>Buy</a>
+        </li>  
+        <li className="list-group-item d-flex justify-content-between align-items-center">
+        {this.state.stocks[1].symbol}
+        <span className="badge badge-primary badge-pill">{this.state.stocks[1].price}</span>
+        <a href = "/" className="btn btn-primary mr-3 pl-3 pr-3" onClick={e=> {this.buyStock(e, this.state.stocks[1].symbol, this.state.stocks[1].price)}}>Buy</a>
+        </li> 
+        <li className="list-group-item d-flex justify-content-between align-items-center">
+        {this.state.stocks[2].symbol}
+        <span className="badge badge-primary badge-pill">{this.state.stocks[2].price}</span>
+        <a href = "/" className="btn btn-primary mr-3 pl-3 pr-3" onClick={e=> {this.buyStock(e, this.state.stocks[2].symbol, this.state.stocks[2].price)}}>Buy</a>
+        </li> 
+        </ul>
+        ):
+        <ul className="list-group">
+        </ul>
+      }
 
-          <div className="row mt-5 mb-5 justify-content-center">
-            <div className="col-3">
-              <div className="card" style={{ width: "18rem" }}>
-                <img
-                  className="card-img-top"
-                  src="https://i2.wp.com/airlinkflight.org/wp-content/uploads/2019/02/male-placeholder-image.jpeg?ssl=1"
-                  alt="Card image cap"
-                />
+        <div className="row mt-5 mb-5 justify-content-center">
+          <div className="col-3">
+            <div className="card" style={{ width: "18rem" }}>
+              <img
+                className="card-img-top"
+                src="https://i2.wp.com/airlinkflight.org/wp-content/uploads/2019/02/male-placeholder-image.jpeg?ssl=1"
+                alt="Card cap"
+              />
 
-                {this.state.loggedIn ? (
-                      <div className="card-body">
-                    <h5 className="card-title">{this.state.userID}</h5>
-                    <h5 className="card-title">Balance: {this.state.balance}</h5>
-                    <p className="card-text"></p>
-                    <div className="text-center">
-                      <a href="#" className="btn btn-secondary pl-3 pr-3" onClick={this.refreshBalance}>
-                      Refresh Balance
-                    </a>
-                    </div>
-                  </div>
-                  ): 
+              {this.state.loggedIn ? (
                     <div className="card-body">
-                    <h5 className="card-title">Sign In</h5>
-                    <p className="card-text"></p>
-                    <div className="text-center">
-                    <form onSubmit={this.signIn}>
-                      <input
-                      type="text"
-                      value={this.state.userID}
-                      name="userID"
-                      placeholder="Enter UserID here"
-                      onChange={this.handleChange}
-                      />
-                      <br/>
-                      <button type="submit">Sign In</button>
-                    </form>
-                    </div>
+                  <h5 className="card-title">{this.state.userID}</h5>
+                  <h5 className="card-title">Balance: {this.state.balance}</h5>
+                  <p className="card-text"></p>
+                  <div className="text-center">
+                    <a href="/" className="btn btn-secondary pl-3 pr-3" onClick={this.refreshBalance}>
+                    Refresh Balance
+                  </a>
+                  <a href="#" className="btn btn-secondary pl-3 pr-3" onClick={this.signOut}>
+                  Sign Out
+                </a>
+                  <br/>
+                <a href="#" className="btn btn-secondary pl-3 pr-3" onClick={this.refreshStock}>
+                  Refresh Stocks
+                </a>
                   </div>
-              }
-              </div>
-            </div>
-            {this.state.loggedIn? (
-              <div className="d-flex justify-content-left ml-5 col-8">
-              <div className="card wid">
-                 {this.renderUserStocks()}
-              </div>
-            </div>
-            ):
-            <div className="d-flex justify-content-left ml-5 col-8">
-            <div className="card wid">
-
+                </div>
+                ): 
+                  <div className="card-body">
+                  <h5 className="card-title">Sign In</h5>
+                  <p className="card-text"></p>
+                  <div className="text-center">
+                  <form onSubmit={this.signIn}>
+                    <input
+                    type="text"
+                    value={this.state.userID}
+                    name="userID"
+                    placeholder="Enter UserID here"
+                    onChange={this.handleChange}
+                    />
+                    <br/>
+                    <button className = "mt-3 btn" type="submit">Sign In</button>
+                  </form>
+                  </div>
+                </div>
+            }
             </div>
           </div>
-            }
-            <div>
-            <h2>Send MiM</h2>
-            <form onSubmit={this.sendMiM}>
-            <input
-            type="text"
-            placeholder="userID"
-            name="sendUserId"
-            value={this.state.sendUserId}
-            placeholder="Enter UserID here"
-            onChange={this.handleChange}
-            />
-            <input
-            type="text"
-            placeholder="amount"
-            name="amount"
-            value={this.state.amount}
-            placeholder="Enter amount here"
-            onChange={this.handleChange}
-            />
-            <button type="submit">Send</button>
-            </form>
-            <h3>{this.state.sendMimStatus}</h3>
+          <div className="d-flex justify-content-center ml-5 col-5">
+            {this.state.loggedIn? (
+
+              <div className="card wid">
+                {this.renderUserStocks()}
+              </div>
+            ):
+            <div className="card wid">
             </div>
+            }
+          </div>
+
+          <div className="justify-content-left col-3">
+
+          <h2>Send MiM</h2>
+          <h3>Company Balance: {this.state.companyBalance}</h3>
+          <form onSubmit={this.sendMiM}>
+          <input
+          type="text"
+          name="sendUserId"
+          value={this.state.sendUserId}
+          placeholder="Enter UserID here"
+          onChange={this.handleChange}
+          className = "mt-3"
+          />
+          <input
+          type="text"
+          name="amount"
+          value={this.state.amount}
+          placeholder="Enter amount here"
+          onChange={this.handleChange}
+          className = "mt-3"
+          />
+          <button className = "mt-3 btn" type="submit">Send</button>
+          </form>
+          <h3>{this.state.sendMimStatus}</h3>
           </div>
         </div>
-      </>
+      </div>
+    </>
     );
   }
 }

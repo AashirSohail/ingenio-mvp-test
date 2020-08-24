@@ -67,6 +67,13 @@ router.get("/getZaddress", (req,res) => {
 
 router.post("/sendMim", (req,res) => {
   const data = req.body;
+  komodoRPC2
+  .z_getbalance("zs18t53rvgl65r6tjhflj4epsxk354qzvzxl7msknye6s29l4sxne3cu3jstcl3ud43nx8xv9q87xe")
+  .then(response=> {
+    if (response < data.amount) {
+      res.status(400).json({error: "The system is currently busy or there may be insufficent balance, please try again!"})
+    }
+    else {
     user.findOne({userID: data.userID})
     .then(response=> {
       console.log(response);
@@ -79,6 +86,12 @@ router.post("/sendMim", (req,res) => {
       .catch(error=>(consol.log(error)))
     })
     .catch(error=> (console.log(error)))
+  }
+  })
+  .catch(error=> {
+    console.log(error)
+  })
+    
 })
 
 router.post("/getBalance", (req,res)=> {
@@ -91,8 +104,16 @@ router.post("/getBalance", (req,res)=> {
     z_getbalance(data.address)
     .then(info=> {
       console.log(info);
-      res.json({balance: info})
+      const userBalance = info;
+      komodoRPC2
+      .z_getbalance("zs18t53rvgl65r6tjhflj4epsxk354qzvzxl7msknye6s29l4sxne3cu3jstcl3ud43nx8xv9q87xe")
+      .then(response=>{
+        console.log(response)
+        res.json({userBalance: userBalance, companyBalance: response})
+      })
+      .catch(error=>(console.log(error)))
     })
+    .catch(error=>(console.log(error)))
 })
 
 router.get("/getNewAddress", (req,res)=> {
@@ -189,7 +210,6 @@ router.post("/signUp", (req,res)=> {
   })
   .catch(error=>(console.log(error)))
 })
-
 
 async function getNewZAddress() {
   return new Promise((resolve,reject)=>{
